@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Hải Đăng Ước Mơ — A Journey Between Two Worlds (STEM Ngữ Văn)</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body class="antialiased select-none">
+
+  <!-- 85%+ FULLSCREEN 3D WORLD CANVAS -->
+  <div id="canvas-container" aria-label="Không gian 3D Hải Đăng Ước Mơ"></div>
+
+  <!-- 3D FLOATING ARCHITECTURAL TIER PINS -->
+  <div id="pins-layer" class="fixed inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+  <!-- CINEMATIC INTRO OVERLAY -->
+  <div id="intro-overlay" class="fixed inset-0 z-40 flex flex-col items-center justify-between py-12 px-6 pointer-events-none transition-opacity duration-1000" style="background: radial-gradient(circle at 50% 45%, rgba(27, 68, 96, 0.25) 0%, rgba(10, 22, 38, 0.76) 100%);">
+    <div class="text-center mt-4">
+      <span class="inline-block px-3.5 py-1 rounded-full text-[11px] uppercase tracking-[0.25em] text-amber-200/90 border border-amber-200/25 bg-slate-900/40 backdrop-blur-md">
+        Dự án STEM Ngữ Văn 12 • Quang Anh vip 10
+      </span>
+    </div>
+
+    <div class="max-w-xl text-center my-auto px-4">
+      <p id="intro-quote" class="font-serif-art italic text-2xl sm:text-4xl text-amber-50 leading-relaxed drop-shadow-lg opacity-0 translate-y-3 transition-all duration-1000">
+        “Giữa đại dương của những đổi thay, đâu là ánh sáng dẫn lối cho bạn?”
+      </p>
+      <p id="intro-sub" class="mt-4 text-xs sm:text-sm text-sky-100/85 tracking-widest uppercase opacity-0 transition-opacity duration-1000 delay-300">
+        Một thế giới — Hai bầu trời — Một ngọn đèn không tắt
+      </p>
+    </div>
+
+    <div class="flex flex-col items-center gap-4 mb-4 pointer-events-auto">
+      <button id="btn-enter-world" type="button" class="pulse-ring relative px-7 py-3 rounded-full bg-amber-500/90 hover:bg-amber-400 text-slate-950 font-semibold text-xs sm:text-sm uppercase tracking-[0.18em] shadow-xl transition transform hover:scale-105 active:scale-95">
+        Bắt đầu hành trình khám phá
+      </button>
+      <button id="btn-skip-intro" type="button" class="text-[11px] text-sky-100/75 hover:text-white underline underline-offset-4 tracking-wider uppercase">
+        Bỏ qua mở đầu (Skip Intro)
+      </button>
+    </div>
+  </div>
+
+  <!-- MINIMALIST EXHIBITION TOP HEADER (<15% UI footprint) -->
+  <header class="fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-4 sm:px-6 py-3.5 pointer-events-none">
+    <!-- Brand / Logo -->
+    <div class="flex items-center gap-3 pointer-events-auto exhibition-pill px-3.5 py-2 rounded-full">
+      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-red-600 to-amber-500 flex items-center justify-center shadow-inner border border-amber-200/40">
+        <svg class="w-4 h-4 text-amber-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 9h6l1 12H8L9 9Z" />
+          <path d="M10 4h4l1 5H9l1-5Z" />
+          <path d="M12 2v2" />
+          <path d="M4 6l3 1M20 6l-3 1" />
+        </svg>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="font-serif-art font-bold text-sm sm:text-base tracking-wide text-amber-50 leading-none">
+            HẢI ĐĂNG ƯỚC MƠ
+          </h1>
+          <span class="hidden md:inline-block text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-200 border border-amber-300/25">
+            Quang Anh vip 10
+          </span>
+        </div>
+        <p id="header-world-status" class="text-[10px] text-sky-200/85 tracking-wider uppercase mt-0.5">
+          0° • Mặt Sáng — Bình Minh Cơ Hội
+        </p>
+      </div>
+    </div>
+
+    <!-- Desktop Controls & Mobile Hamburger -->
+    <div class="flex items-center gap-2 pointer-events-auto">
+      <button id="btn-toggle-tiers" type="button" class="exhibition-pill px-3.5 py-2 rounded-full flex items-center gap-2 text-xs font-medium text-amber-100 hover:text-white" title="Hiện/Ẩn các tầng kiến trúc nghị luận">
+        <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+        </svg>
+        <span class="hidden sm:inline">7 Tầng Nghị Luận</span>
+        <span id="pins-badge" class="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-500/30 text-amber-200">Hiện</span>
+      </button>
+
+      <button id="btn-audio" type="button" class="exhibition-pill p-2.5 rounded-full text-sky-100 hover:text-amber-300" title="Bật/Tắt âm thanh đại dương & giông bão">
+        <svg id="icon-audio-off" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M11 5L6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+        <svg id="icon-audio-on" class="w-4 h-4 hidden text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </button>
+
+      <button id="btn-reset-angle" type="button" class="exhibition-pill px-3 py-2 rounded-full text-xs font-medium text-sky-100 hover:text-amber-300 hidden sm:flex items-center gap-1.5" title="Đưa hải đăng về góc 0° (Mặt Sáng)">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>
+        </svg>
+        <span>Reset 0°</span>
+      </button>
+
+      <div class="hidden lg:flex items-center exhibition-pill rounded-full p-1 text-[11px]">
+        <button type="button" data-quality="high" class="quality-btn px-2.5 py-1 rounded-full bg-amber-500 text-slate-950 font-semibold transition">High</button>
+        <button type="button" data-quality="balanced" class="quality-btn px-2.5 py-1 rounded-full text-sky-100/80 hover:text-white transition">Balanced</button>
+        <button type="button" data-quality="performance" class="quality-btn px-2.5 py-1 rounded-full text-sky-100/80 hover:text-white transition">Perf</button>
+      </div>
+
+      <button id="btn-menu" type="button" class="exhibition-pill p-2.5 rounded-full text-amber-100 hover:text-white" title="Mở bảng điều khiển & danh sách tầng">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ROTATION HINT -->
+  <div id="gesture-hint" class="fixed top-20 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-center transition-opacity duration-700">
+    <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-950/45 backdrop-blur-md border border-amber-200/20 text-[11px] sm:text-xs tracking-[0.16em] uppercase text-amber-100/95 shadow-lg">
+      <svg class="w-4 h-4 text-amber-300 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 8l4 4-4 4M7 8l-4 4 4 4M3 12h18"/>
+      </svg>
+      <span>Giữ và kéo để xoay ngọn hải đăng (0° Sáng Nắng – 180° Bão)</span>
+    </div>
+  </div>
+
+  <!-- BOTTOM 360° WORLD WEATHER COMPASS -->
+  <footer class="fixed bottom-0 left-0 right-0 z-20 px-4 sm:px-6 pb-4 pt-2 pointer-events-none flex flex-col items-center gap-2">
+    <p id="world-poetic-line" class="text-[11px] sm:text-xs font-serif-art italic text-amber-100/90 tracking-wide text-center drop-shadow">
+      “Công nghệ có thể mở ra con đường, nhưng chính con người mới quyết định mình sẽ đi bao xa và trở thành ai trên hành trình ấy.”
+    </p>
+
+    <div class="exhibition-pill rounded-2xl sm:rounded-full px-4 py-2.5 pointer-events-auto flex flex-wrap sm:flex-nowrap items-center justify-center gap-3 sm:gap-4 max-w-2xl w-full">
+      <div class="flex items-center gap-2 min-w-[160px]">
+        <span id="weather-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-[0_0_10px_#fbbf24]"></span>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span id="angle-readout" class="text-xs font-bold text-amber-300 tabular-nums">0°</span>
+            <span id="world-phase-label" class="text-[11px] font-medium text-white">Ban Ngày • Mặt Trời Rực Rỡ</span>
+          </div>
+          <div class="text-[9px] text-sky-200/75 uppercase tracking-wider" id="weather-detail-label">
+            Mặt trời tỏa nắng • Hải âu vỗ cánh • Biển xanh
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1 min-w-[140px] flex items-center gap-2">
+        <span class="text-xs" title="0° Ban Ngày Mặt Trời Rực Rỡ">☀️</span>
+        <input id="angle-slider" type="range" min="0" max="360" step="1" value="0" aria-label="Góc xoay thế giới 0 đến 360 độ" class="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-amber-400" />
+        <span class="text-xs" title="180° Ban Đêm Ngân Hà & Biển Dạ Quang">🌌</span>
+      </div>
+
+      <div class="flex items-center gap-1 text-[10px]">
+        <button type="button" data-jump-angle="0" class="angle-jump-btn px-2.5 py-1 rounded-full bg-amber-500/25 hover:bg-amber-500/40 text-amber-200 border border-amber-400/30 transition">
+          0° Sáng
+        </button>
+        <button type="button" data-jump-angle="90" class="angle-jump-btn px-2 py-1 rounded-full bg-slate-700/50 hover:bg-slate-600/70 text-sky-100 border border-white/10 transition">
+          90° Chuyển
+        </button>
+        <button type="button" data-jump-angle="180" class="angle-jump-btn px-2.5 py-1 rounded-full bg-cyan-950/85 hover:bg-cyan-900 text-cyan-200 border border-cyan-400/40 transition">
+          180° Bão
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- COMPACT NAVIGATION & SETTINGS MENU DRAWER -->
+  <aside id="menu-drawer" class="fixed top-16 right-4 z-30 w-80 max-w-[calc(100vw-2rem)] exhibition-pill rounded-2xl p-4 text-sky-50 hidden">
+    <div class="flex items-center justify-between pb-3 border-b border-white/10">
+      <div>
+        <h2 class="font-serif-art text-base font-bold text-amber-200">Khám Phá & Cài Đặt</h2>
+        <p class="text-[11px] text-sky-200/75">Đề bài: Thời đại số — Cơ hội theo đuổi ước mơ & Thử thách bản lĩnh</p>
+      </div>
+      <button id="btn-close-menu" type="button" class="p-1.5 rounded-full hover:bg-white/10 text-sky-200">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div class="mt-3">
+      <div class="text-[10px] uppercase tracking-wider text-amber-300/90 font-semibold mb-2">
+        7 Tầng Kiến Trúc Hải Đăng (Click để Zoom)
+      </div>
+      <div id="menu-tier-list" class="space-y-1.5 max-h-60 overflow-y-auto custom-scroll pr-1"></div>
+    </div>
+
+    <div class="mt-4 pt-3 border-t border-white/10 space-y-3 text-xs">
+      <div class="flex items-center justify-between">
+        <span class="text-sky-200/90">Chất lượng đồ họa:</span>
+        <div class="flex items-center gap-1 bg-slate-900/70 p-1 rounded-full">
+          <button type="button" data-quality="high" class="quality-btn px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-semibold text-[10px]">High</button>
+          <button type="button" data-quality="balanced" class="quality-btn px-2 py-0.5 rounded-full text-sky-100 text-[10px]">Balanced</button>
+          <button type="button" data-quality="performance" class="quality-btn px-2 py-0.5 rounded-full text-sky-100 text-[10px]">Performance</button>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <span class="text-sky-200/90">Giao diện thẻ đọc:</span>
+        <button id="btn-reading-theme" type="button" class="px-3 py-1 rounded-full bg-amber-500/20 border border-amber-300/30 text-amber-200 text-[11px]">
+          Kem ấm (Dễ đọc)
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between">
+        <span class="text-sky-200/90">Góc nhìn Camera:</span>
+        <button id="btn-menu-reset" type="button" class="px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-white text-[11px]">
+          Đặt lại toàn cảnh (0°)
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- REFINED ACADEMIC ESSAY PANEL -->
+  <section id="essay-panel" aria-live="polite" class="fixed top-16 bottom-20 right-4 z-30 w-full max-w-md academic-panel rounded-3xl p-5 sm:p-6 flex flex-col transition-all duration-500 translate-x-[120%] opacity-0 pointer-events-none">
+    <div class="flex items-start justify-between gap-3 pb-3 border-b border-amber-900/15">
+      <div>
+        <div class="flex items-center gap-2">
+          <span id="essay-tier-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-600/20 text-amber-800 border border-amber-600/30">
+            Tầng 1 • Chân Đá Hải Đăng
+          </span>
+          <span id="essay-world-tag" class="px-2 py-0.5 rounded-full text-[10px] font-medium bg-sky-600/15 text-sky-800">
+            Mở Bài
+          </span>
+        </div>
+        <h2 id="essay-title" class="font-serif-art text-xl sm:text-2xl font-bold mt-1.5 leading-snug">
+          Khởi Đầu Hành Trình Thanh Xuân
+        </h2>
+      </div>
+      <button id="btn-close-essay" type="button" class="p-2 rounded-full hover:bg-black/10 transition shrink-0" title="Đóng và trở lại toàn cảnh 3D">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div id="essay-body" class="flex-1 overflow-y-auto custom-scroll py-4 pr-1 space-y-4 text-sm leading-relaxed"></div>
+
+    <div class="pt-3 border-t border-amber-900/15 flex items-center justify-between gap-2">
+      <button id="btn-prev-tier" type="button" class="px-3.5 py-2 rounded-full text-xs font-semibold bg-black/5 hover:bg-black/10 transition flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Tầng trước</span>
+      </button>
+      <span id="essay-step-indicator" class="text-xs font-medium opacity-70">Tầng 1 / 7</span>
+      <button id="btn-next-tier" type="button" class="px-3.5 py-2 rounded-full text-xs font-semibold bg-amber-600 hover:bg-amber-500 text-white transition flex items-center gap-1.5">
+        <span>Tầng tiếp</span>
+        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- TÁCH RIÊNG CÁC MODULE JAVASCRIPT ĐỂ DỄ PHÂN TÍCH & CHỈNH SỬA -->
+  <script src="js/data.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/shaders.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
